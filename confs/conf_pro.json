@@ -1,0 +1,49 @@
+{
+
+    "server": {
+        "host": "0.0.0.0",
+        "port": "8108"
+    },
+
+    "storage": {
+        "sql":{
+            "dbs": {
+                "activity_dsn":"pk_web:Udvyw93%dc9i3@tcp(aws-db-prod.cluster-ck7gakvwrblj.ap-east-1.rds.amazonaws.com:3306)/pk_activity_sys?charset=utf8&parseTime=True&loc=Local",
+                "data_dsn": "pk_web:Udvyw93%dc9i3@tcp(aws-db-prod-instance-2-ap-east-1a.ck7gakvwrblj.ap-east-1.rds.amazonaws.com:3306)/pk_data?charset=utf8&parseTime=True&loc=Local",
+                "user_dsn": "pk_web:Udvyw93%dc9i3@tcp(aws-db-prod-instance-2-ap-east-1a.ck7gakvwrblj.ap-east-1.rds.amazonaws.com:3306)/pk_user?charset=utf8&parseTime=True&loc=Local",
+                "log_dsn": "pk_web:Udvyw93%dc9i3@tcp(aws-db-prod-instance-2-ap-east-1a.ck7gakvwrblj.ap-east-1.rds.amazonaws.com:3306)/pk_log?charset=utf8&parseTime=True&loc=Local"
+            }
+        },
+        "mgo":{
+            "uri": "",
+            "database": ""
+        },
+        "rds":{
+            "addr": "prod-activity-redis.ws7efo.ng.0001.ape1.cache.amazonaws.com:6379",
+            "password": ""
+        }
+    },
+    
+    "rpcx":{
+        "name":"ActivityService",
+        "protocol":"tcp",
+        "address":"127.0.0.1:4890"    
+    },
+
+    "NotifySrvConfig":{
+        "addr": "172.31.47.93:4438",
+        "path": "NotifyRpc"
+    },
+
+    "MoneySrvConfig":{
+        "addr": "172.31.47.93:4779",
+        "path": "MoneyRpc"
+    },
+
+    "TokenRdsArea":{
+        "addr": "172.31.47.93:6005",
+        "password":"Uhb2w9sDSas93Dlsa",
+        "db":0
+    }
+}
+	
