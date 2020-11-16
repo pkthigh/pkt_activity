@@ -143,8 +143,6 @@ func (activity *HandNumActivity) OfflineOngoing() error {
 	// 有正在进行中的活动
 	if ongoing := activity.Ongoing(); ongoing {
 		// 提前下线
-		// if time.Now().Unix() < int64(activity.ongoing.Info.OfflineTime)+60*60*24 {
-		// 	activity.ongoing.Info.Status = 3
 		if time.Now().Unix() < int64(activity.ongoing.Info.OfflineTime) {
 			activity.ongoing.Info.Status = 3
 
@@ -249,6 +247,10 @@ func (activity *HandNumActivity) Do(userid string) (int64, common.Errs) {
 	var did string
 	if log.MacAddr != "" {
 		did = log.MacAddr
+	}
+	/* 关闭设备ID限制
+	if log.MacAddr != "" {
+		did = log.MacAddr
 		// 判断该玩家设备ID是否重复
 		dids, err := Store.Rds(common.UserDeviceIDResultCache).HGetAll(fmt.Sprintf("%s(%s)", strconv.FormatInt(activity.ID(), 10), time.Now().Format("2006-01-02"))).Result()
 		if err != nil {
@@ -261,6 +263,7 @@ func (activity *HandNumActivity) Do(userid string) (int64, common.Errs) {
 			}
 		}
 	}
+	*/
 
 	// 3.转换玩家ID类型
 	playerid, err := strconv.ParseInt(userid, 10, 64)
@@ -398,12 +401,14 @@ func (activity *HandNumActivity) Do(userid string) (int64, common.Errs) {
 				logger.ErrorF("upate redis cache user activity result error: %v", err)
 			}
 
-			// 用户设备ID不为空
-			if did != "" {
-				if err := Store.Rds(common.UserDeviceIDResultCache).HSet(fmt.Sprintf("%s(%s)", strconv.FormatInt(activity.ID(), 10), time.Now().Format("2006-01-02")), userid, did).Err(); err != nil {
-					logger.ErrorF("upate redis cache user did result error: %v", err)
+			/*
+				// 用户设备ID不为空
+				if did != "" {
+					if err := Store.Rds(common.UserDeviceIDResultCache).HSet(fmt.Sprintf("%s(%s)", strconv.FormatInt(activity.ID(), 10), time.Now().Format("2006-01-02")), userid, did).Err(); err != nil {
+						logger.ErrorF("upate redis cache user did result error: %v", err)
+					}
 				}
-			}
+			*/
 
 			return record.ID, common.Successful
 		}

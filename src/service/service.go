@@ -10,6 +10,7 @@ import (
 	"pkt_activity/library/logger"
 	"pkt_activity/model"
 	"strconv"
+	"sync"
 	"syscall"
 	"time"
 
@@ -20,6 +21,7 @@ import (
 
 // ActivityService 活动服务
 type ActivityService struct {
+	sync.Mutex
 	gateway      *http.Server               // http gateway
 	service      *server.Server             // rpcx service
 	message      chan redis.Message         // redis sub message

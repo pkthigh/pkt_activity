@@ -38,6 +38,8 @@ func (srv *ActivityService) assets(uid uint32, deltaValue int64, optionType uint
 
 // Participate 参加活动
 func (srv *ActivityService) participate(aid int64, atype int, userid string, lang bool) (int64, common.Errs) {
+	srv.Lock()
+	defer srv.Unlock()
 
 	activity, ok := srv.activitys[common.ACTYPE(atype)]
 	if !ok {
