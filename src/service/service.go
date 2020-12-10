@@ -137,7 +137,7 @@ func (srv *ActivityService) Run() error {
 		for {
 			receipt, err := srv.PubSubClient.Receive()
 			if err != nil {
-				logger.ErrorF("notice receive error: %v", err)
+				// logger.ErrorF("notice receive error: %v", err)
 			}
 			if receipt != "" {
 				switch v := receipt.(type) {
@@ -154,10 +154,31 @@ func (srv *ActivityService) Run() error {
 
 	logger.InfoF("启动步骤: 5/7 成功")
 
-	// 6.每日调用活动定时任务
+	// 6.上下线检查 & 每日调用活动定时任务
+
 	go func() {
 		for {
-			mt := time.Now().Format("2006-01-02 15:04")
+			nowtime := time.Now()
+			if nowtime.Format("15:04") == "00:00" {
+				for _, activity := range srv.activitys {
+					if activity.Ongoing() {
+						if err := activity.TimingTask(); err != nil {
+							logger.ErrorF("[Regularly Check]: 凌晨定时任务 活动: %v 错误: %v", activity.ID(), err)
+						}
+						logger.InfoF("指定定时任务成功ID: %v", activity.ID())
+					}
+				}
+				time.Sleep(time.Hour)
+			} else {
+				time.Sleep(2 * time.Second)
+			}
+		}
+	}()
+
+	go func() {
+		for {
+			nowtime := time.Now()
+			mt := nowtime.Format("2006-01-02 15:04")
 			for _, activity := range srv.activitys {
 				if activity.Ongoing() {
 					// 检测当前活动是否下线

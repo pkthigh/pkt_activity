@@ -56,8 +56,8 @@ func (activity *HandNumActivity) TimingTask() error {
 		for i, detail := range activity.ongoing.Details {
 			activity.ongoing.Details[i].BonusRemainng = activity.ongoing.Details[i].BonusNum
 			if err := Store.DBs(common.ActivityDsn).Table("ac_activity_detail").Where("`id` = ?", detail.ID).
-				Update(&detail).Error; err != nil {
-				logger.ErrorF("upate mysql bonus_remainng id: %v error: %v", activity.ongoing.Details[i].ID, err)
+				Update("bonus_remainng", detail.BonusNum).Error; err != nil {
+				logger.ErrorF("upate mysql bonus_remainng aid: %v details id: %v error: %v", activity.ID(), activity.ongoing.Details[i].ID, err)
 			}
 		}
 	}
@@ -248,22 +248,6 @@ func (activity *HandNumActivity) Do(userid string) (int64, common.Errs) {
 	if log.MacAddr != "" {
 		did = log.MacAddr
 	}
-	/* 关闭设备ID限制
-	if log.MacAddr != "" {
-		did = log.MacAddr
-		// 判断该玩家设备ID是否重复
-		dids, err := Store.Rds(common.UserDeviceIDResultCache).HGetAll(fmt.Sprintf("%s(%s)", strconv.FormatInt(activity.ID(), 10), time.Now().Format("2006-01-02"))).Result()
-		if err != nil {
-			logger.ErrorF("hgetall redis cache user did result error: %v", err)
-		}
-		for uid, id := range dids {
-			if did == id {
-				logger.ErrorF("this did: %v used lottery to uid: %v", did, uid)
-				return 0, common.ErrDeviceBeenRaffled
-			}
-		}
-	}
-	*/
 
 	// 3.转换玩家ID类型
 	playerid, err := strconv.ParseInt(userid, 10, 64)
@@ -400,15 +384,6 @@ func (activity *HandNumActivity) Do(userid string) (int64, common.Errs) {
 			if err := Store.Rds(common.UserActivityResultCache).HSet(fmt.Sprintf("%s(%s)", strconv.FormatInt(activity.ID(), 10), time.Now().Format("2006-01-02")), userid, record.ActivityDetailID).Err(); err != nil {
 				logger.ErrorF("upate redis cache user activity result error: %v", err)
 			}
-
-			/*
-				// 用户设备ID不为空
-				if did != "" {
-					if err := Store.Rds(common.UserDeviceIDResultCache).HSet(fmt.Sprintf("%s(%s)", strconv.FormatInt(activity.ID(), 10), time.Now().Format("2006-01-02")), userid, did).Err(); err != nil {
-						logger.ErrorF("upate redis cache user did result error: %v", err)
-					}
-				}
-			*/
 
 			return record.ID, common.Successful
 		}

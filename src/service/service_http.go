@@ -55,14 +55,11 @@ func (srv *ActivityService) GetUserLanguage(c *gin.Context) int {
 	var code int
 	language := c.Request.Header.Get("language")
 	if language == "zh" {
-		// fmt.Println("zh")
 		code = 0
 	}
 	if language == "en" {
-		// fmt.Println("en")
 		code = 1
 	}
-	// fmt.Printf("%+v", c.Request.Header)
 	return code
 }
 
