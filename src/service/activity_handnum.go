@@ -50,7 +50,6 @@ func (activity *HandNumActivity) Info() ActivityInfos {
 
 // TimingTask 凌晨定时任务
 func (activity *HandNumActivity) TimingTask() error {
-
 	// 更新每日剩余礼包
 	if activity.Ongoing() {
 		for i, detail := range activity.ongoing.Details {
@@ -61,7 +60,6 @@ func (activity *HandNumActivity) TimingTask() error {
 			}
 		}
 	}
-
 	return nil
 }
 
@@ -169,7 +167,7 @@ func (activity *HandNumActivity) Verification(userid string) (interface{}, commo
 	}
 	todate := time.Now().Format("2006-01-02")
 
-	// 查询今日玩家完成德州手数
+	//从redis查询玩家今日完成的手数
 	var phn uint32
 	num, err := Store.Rds(common.TexasHandOverRecordStore).HGet(userid, todate).Uint64()
 	if err != nil && err != redis.Nil {
@@ -181,7 +179,7 @@ func (activity *HandNumActivity) Verification(userid string) (interface{}, commo
 	// 封装PB消息返回发给客户端
 	var aid uint32 = uint32(activity.ID())
 	var atype uint32 = uint32(activity.Type())
-	var dhn uint32 = uint32(activity.ongoing.Info.HandNum)
+	var dhn uint32 = uint32(activity.ongoing.Info.HandNum) //活动需要的手数
 
 	// 超出门槛, 前端显示时, 只显示门槛的MAX就行
 	var cd bool
@@ -196,22 +194,21 @@ func (activity *HandNumActivity) Verification(userid string) (interface{}, commo
 			ActivityId:   &aid,
 			ActivityType: &atype,
 			HandsProgress: &common.PBActivityInfo_ActivityHandsProgress{
-				PlayedHandsNum: &phn,
-				DrawHandsNum:   &dhn,
-				CanDraw:        &cd,
+				PlayedHandsNum: &phn, // 玩家当前手数
+				DrawHandsNum:   &dhn, // 活动需要手数
+				CanDraw:        &cd,  // 是否满足条件
 			},
 		},
 	}
 	var f bool = false
+	//如果满足抽奖条件
 	if cd {
-
-		// 查询玩家今日是否已经完成
+		// 查询玩家今日是否已经抽过奖
 		result := Store.Rds(common.UserActivityResultCache).HGet(fmt.Sprintf("%s(%s)", strconv.FormatInt(activity.ID(), 10), time.Now().Format("2006-01-02")), userid)
 		// 查询错误 并且查询不是为KeyNil错误
 		if err := result.Err(); err != nil && err != redis.Nil {
 			logger.ErrorF("HandNumActivity Verification query palyer: %v hands over error: %v", userid, err)
 			return nil, common.ErrRedisQuery
-
 			// 玩家今日已经完成了活动
 		} else if err == nil {
 			info.Info.HandsProgress.CanDraw = &f
@@ -380,11 +377,11 @@ func (activity *HandNumActivity) Do(userid string) (int64, common.Errs) {
 				logger.ErrorF("upate mysql bonus_remainng id: %v error: %v", activity.ongoing.Details[i].ID, err)
 			}
 
+			// 对抽过奖的玩家信息及活动信息存入redis
 			// 缓存 活动ID(当日) 用户 活动条件ID
 			if err := Store.Rds(common.UserActivityResultCache).HSet(fmt.Sprintf("%s(%s)", strconv.FormatInt(activity.ID(), 10), time.Now().Format("2006-01-02")), userid, record.ActivityDetailID).Err(); err != nil {
 				logger.ErrorF("upate redis cache user activity result error: %v", err)
 			}
-
 			return record.ID, common.Successful
 		}
 	}

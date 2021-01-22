@@ -12,6 +12,9 @@ type AcActivity struct {
 	OnlineTime  int `json:"online_time"`  // 活动开始时间
 	OfflineTime int `json:"offline_time"` // 活动结束时间
 
+	TaskBeginTime int `json:"task_begin_time"` //任务开始时间
+	TaskEndTime   int `json:"task_end_time"`   //任务结束时间
+
 	NameZh    string `json:"name_zh"`    // 活动名字 中文
 	ContentZh string `json:"content_zh"` // 活动内容 中文
 	PicZhURL  string `json:"pic_zh_url"` // 活动海报 中文
